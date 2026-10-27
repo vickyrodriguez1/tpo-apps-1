@@ -7,6 +7,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +34,11 @@ fun WorkerHomeScreen(
     onSectorClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onRefresh: () -> Unit = {}
-) {
+)
+{
+    var mostrarExplicacion by remember {
+        mutableStateOf(false)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -184,7 +192,10 @@ fun WorkerHomeScreen(
                     text = "¿Qué significa este estado?  ›",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextoPrincipal
+                    color = TextoPrincipal,
+                    modifier = Modifier.clickable {
+                        mostrarExplicacion = true
+                    }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -237,6 +248,36 @@ fun WorkerHomeScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+    if (mostrarExplicacion) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarExplicacion = false
+            },
+            title = {
+                Text("¿Qué significa este estado?")
+            },
+            text = {
+                Text(
+                    "Tu sector se encuentra en estado de Atención. " +
+                            "Esto significa que el nivel de ruido alcanzó " +
+                            "el umbral de atención establecido para el monitoreo. " +
+                            "Se recomienda realizar un seguimiento de las mediciones."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarExplicacion = false
+                    }
+                ) {
+                    Text(
+                        "Entendido",
+                        color = VioletaPrincipal
+                    )
+                }
+            }
+        )
     }
 }
 

@@ -18,6 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.soundfriendlyworkplace.screens.RecoveryScreen
 import com.example.soundfriendlyworkplace.screens.CodeVerificationScreen
+import com.example.soundfriendlyworkplace.screens.worker.WorkerHomeScreen
+import com.example.soundfriendlyworkplace.screens.worker.WorkerMainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,8 +27,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SoundFriendlyWorkplaceTheme {
+                var pantallaPrincipal by rememberSaveable {
+                    mutableStateOf("worker")
+                }
+                var correoRecuperacion by rememberSaveable {
+                    mutableStateOf("")
+                }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                /*Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     var pantalla by rememberSaveable {
                         mutableStateOf("login")
                     }
@@ -60,6 +68,38 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                }*/
+                when (pantallaPrincipal) {
+
+                    "worker" -> WorkerMainScreen(
+                        onLogout = {
+                            pantallaPrincipal = "login"
+                        }
+                    )
+
+                    "login" -> LoginScreen(
+                        onForgotPassword = {
+                            pantallaPrincipal = "recovery"
+                        },
+                        onLogin = { correo, contrasena ->
+                            pantallaPrincipal = "worker"
+                        }
+                    )
+                    "recovery" -> RecoveryScreen(
+                        onBack = {
+                            pantallaPrincipal = "login"
+                        },
+                        onSendCode = { correo ->
+                            correoRecuperacion = correo
+                            pantallaPrincipal = "verification"
+                        }
+                    )
+                    "verification" -> CodeVerificationScreen(
+                        correo = correoRecuperacion,
+                        onBack = {
+                            pantallaPrincipal = "recovery"
+                        }
+                    )
                 }
 
             }
@@ -75,10 +115,10 @@ fun greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun GreetingPreview() {
+fun WorkerPreview() {
     SoundFriendlyWorkplaceTheme {
-        greeting("Android")
+        WorkerMainScreen()
     }
 }

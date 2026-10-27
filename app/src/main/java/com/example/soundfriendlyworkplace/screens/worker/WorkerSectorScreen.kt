@@ -45,7 +45,11 @@ fun WorkerSectorScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = onBack) {
+            TextButton(
+                onClick = onBack,
+                modifier = Modifier.width(25.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) {
                 Text("‹", fontSize = 28.sp, color = TextoPrincipal)
             }
 

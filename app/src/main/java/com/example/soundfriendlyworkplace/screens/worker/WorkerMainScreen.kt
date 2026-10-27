@@ -8,12 +8,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.soundfriendlyworkplace.components.WorkerBottomBar
 import com.example.soundfriendlyworkplace.ui.theme.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 
 @Composable
-fun WorkerMainScreen() {
+fun WorkerMainScreen(
+    onLogout: () -> Unit = {}
+) {
 
     var pantalla by rememberSaveable {
         mutableStateOf("home")
+    }
+    var mostrarConexion by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var mostrarCerrarSesion by rememberSaveable {
+        mutableStateOf(false)
     }
 
     Scaffold(
@@ -56,14 +67,68 @@ fun WorkerMainScreen() {
 
                 "profile" -> WorkerProfileScreen(
                     onConnectionClick = {
-                        // Pendiente: mostrar estado de conexión
+                        mostrarConexion = true
                     },
                     onLogout = {
-                        // Pendiente: conectar con el cierre de sesión
+                        mostrarCerrarSesion = true
                     }
                 )
             }
         }
+    }
+    if (mostrarConexion) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarConexion = false
+            },
+            title = {
+                Text("Estado de conexión")
+            },
+            text = {
+                Text("La información de conexión estará disponible próximamente.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarConexion = false
+                    }
+                ) {
+                    Text("Aceptar", color = VioletaPrincipal)
+                }
+            }
+        )
+    }
+    if (mostrarCerrarSesion) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarCerrarSesion = false
+            },
+            title = {
+                Text("Cerrar sesión")
+            },
+            text = {
+                Text("¿Estás seguro de que querés cerrar sesión?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarCerrarSesion = false
+                        onLogout()
+                    }
+                ) {
+                    Text("Cerrar sesión", color = VioletaPrincipal)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        mostrarCerrarSesion = false
+                    }
+                ) {
+                    Text("Cancelar", color = TextoPrincipal)
+                }
+            }
+        )
     }
 }
 
