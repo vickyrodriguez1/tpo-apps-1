@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.soundfriendlyworkplace.ui.theme.*
 
+
 @Composable
 fun HygieneBottomBar(
     selectedScreen: String,
@@ -13,10 +14,7 @@ fun HygieneBottomBar(
 ) {
     val items = listOf(
         "Inicio" to "home",
-        "Alertas" to "alerts",
-        "Historial" to "history",
-        "Sensores" to "sensors",
-        "Perfil" to "profile"
+        "Alertas" to "alerts"
     )
 
     NavigationBar(
@@ -30,10 +28,8 @@ fun HygieneBottomBar(
                     Text(
                         text = when (screen) {
                             "home" -> "⌂"
-                            "alerts" -> "♧"
-                            "history" -> "◷"
-                            "sensors" -> "▥"
-                            else -> "♙"
+                            "alerts" -> "⚠"
+                            else -> ""
                         }
                     )
                 },

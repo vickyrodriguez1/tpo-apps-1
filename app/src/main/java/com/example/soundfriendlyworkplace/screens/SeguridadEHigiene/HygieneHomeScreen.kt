@@ -1,28 +1,26 @@
 package com.example.soundfriendlyworkplace.screens.SeguridadEHigiene
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundfriendlyworkplace.ui.theme.*
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.soundfriendlyworkplace.ui.theme.SoundFriendlyWorkplaceTheme
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun HygieneHomeScreen(
-    onSectorClick: () -> Unit = {}
+    onSectorClick: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -146,40 +144,36 @@ fun HygieneHomeScreen(
 // TODO: Reemplazar estos datos de ejemplo por los datos reales.
         SectorCard(
             nombre = "Taller",
-            onClick = onSectorClick,
+            onClick = { onSectorClick("Taller") },
             sensor = "S-003",
             nivelRuido = "91 dBA",
-            dosis = "106%",
             estado = "Crítico",
             colorEstado = Color(0xFFC62828),
-            colorFondo = Color(0xFFFFE8EB),
-            progreso = 1f
+            colorFondo = Color(0xFFFFE8EB)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         SectorCard(
             nombre = "Producción",
+            onClick = { onSectorClick("Producción") },
             sensor = "S-002",
             nivelRuido = "84 dBA",
-            dosis = "82%",
             estado = "Atención",
             colorEstado = Color(0xFF996000),
-            colorFondo = Color(0xFFFFEFCB),
-            progreso = 0.82f
+            colorFondo = Color(0xFFFFEFCB)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         SectorCard(
             nombre = "Administración",
+            onClick = { onSectorClick("Administración") },
             sensor = "S-001",
             nivelRuido = "65 dBA",
-            dosis = "35%",
             estado = "Normal",
             colorEstado = Color(0xFF2E7D32),
-            colorFondo = Color(0xFFE4F3E8),
-            progreso = 0.35f
+            colorFondo = Color(0xFFE4F3E8)
         )
     }
 }
@@ -189,11 +183,9 @@ private fun SectorCard(
     nombre: String,
     sensor: String,
     nivelRuido: String,
-    dosis: String,
     estado: String,
     colorEstado: Color,
     colorFondo: Color,
-    progreso: Float,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -251,7 +243,7 @@ private fun SectorCard(
             )
 
             Text(
-                text = "$dosis de dosis  ›",
+                text = "Ver detalle ›",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = colorEstado
@@ -259,15 +251,6 @@ private fun SectorCard(
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        LinearProgressIndicator(
-            progress = { progreso },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp),
-            color = colorEstado,
-            trackColor = Color(0xFFD8CCDF)
-        )
     }
 }
 @Composable

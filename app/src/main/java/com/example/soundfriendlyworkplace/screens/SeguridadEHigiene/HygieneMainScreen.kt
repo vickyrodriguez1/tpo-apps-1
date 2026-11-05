@@ -15,6 +15,9 @@ fun HygieneMainScreen() {
     var pantalla by rememberSaveable {
         mutableStateOf("home")
     }
+    var sectorSeleccionado by rememberSaveable {
+        mutableStateOf("Taller")
+    }
 
     Scaffold(
         containerColor = FondoLavanda,
@@ -31,19 +34,21 @@ fun HygieneMainScreen() {
         ) {
             when (pantalla) {
                 "home" -> HygieneHomeScreen(
-                    onSectorClick = {
+                    onSectorClick = { sector ->
+                        sectorSeleccionado = sector
                         pantalla = "sector"
                     }
                 )
 
                 "sector" -> HygieneSectorScreen(
-                    onBack = {
-                        pantalla = "home"
-                    }
+                    sector = sectorSeleccionado,
+                    onBack = { pantalla = "home" }
                 )
 
+                "alerts" -> HygieneAlertsScreen(
+                    onViewSectors = { pantalla = "home" }
+                )
                 // TODO: Crear y conectar las demás pantallas.
-                "alerts" -> HygieneHomeScreen()
                 "history" -> HygieneHomeScreen()
                 "sensors" -> HygieneHomeScreen()
                 "profile" -> HygieneHomeScreen()

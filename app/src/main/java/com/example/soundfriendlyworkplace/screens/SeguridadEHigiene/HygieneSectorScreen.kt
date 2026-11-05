@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -16,17 +17,64 @@ import com.example.soundfriendlyworkplace.ui.theme.*
 
 @Composable
 fun HygieneSectorScreen(
+    sector: String,
     onBack: () -> Unit = {},
-    onRegisterIntervention: () -> Unit = {}
 ) {
+    // TODO: Reemplazar estos datos de ejemplo por los del backend.
+    val sensor = when (sector) {
+        "Taller" -> "S-003"
+        "Producción" -> "S-002"
+        "Administración" -> "S-001"
+        else -> "Sin sensor"
+    }
+
+    val nivelRuido = when (sector) {
+        "Taller" -> "91 dBA"
+        "Producción" -> "84 dBA"
+        "Administración" -> "65 dBA"
+        else -> "Sin datos"
+    }
+
+    val estado = when (sector) {
+        "Taller" -> "Crítico"
+        "Producción" -> "Atención"
+        "Administración" -> "Normal"
+        else -> "Sin datos"
+    }
+    val colorEstado = when (sector) {
+        "Taller" -> Color(0xFFC62828)
+        "Producción" -> Color(0xFF996000)
+        "Administración" -> Color(0xFF2E7D32)
+        else -> TextoSecundario
+    }
+    val colorFondo = when (sector) {
+        "Taller" -> Color(0xFFFFE8EB)
+        "Producción" -> Color(0xFFFFEFCB)
+        "Administración" -> Color(0xFFE4F3E8)
+        else -> Color.White
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(FondoLavanda)
             .padding(18.dp)
     ) {
-        TextButton(onClick = onBack) {
-            Text("‹  Taller", color = TextoPrincipal, fontSize = 20.sp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onBack) {
+                Text(
+                    text = "‹",
+                    fontSize = 30.sp,
+                    color = TextoPrincipal
+                )
+            }
+
+            Text(
+                text = sector,
+                fontSize = 20.sp,
+                color = TextoPrincipal
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -36,15 +84,15 @@ fun HygieneSectorScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Sensor S-003",
+                text = "Sensor $sensor",
                 fontSize = 12.sp,
                 color = TextoSecundario
             )
 
             Text(
-                text = "ⓘ Crítico",
+                text = "ⓘ $estado",
                 fontSize = 12.sp,
-                color = Color(0xFFC62828)
+                color = colorEstado
             )
         }
 
@@ -55,12 +103,12 @@ fun HygieneSectorScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Color(0xFFFFE8EB),
+                    colorFondo,
                     RoundedCornerShape(12.dp)
                 )
                 .border(
                     1.dp,
-                    Color(0xFFE57373),
+                    colorEstado,
                     RoundedCornerShape(12.dp)
                 )
                 .padding(16.dp)
@@ -72,7 +120,7 @@ fun HygieneSectorScreen(
                 Column {
                     Text("Nivel actual", fontSize = 12.sp, color = TextoSecundario)
                     Text(
-                        "91 dBA",
+                        nivelRuido,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextoPrincipal
@@ -80,15 +128,21 @@ fun HygieneSectorScreen(
                 }
 
                 Column {
-                    Text("Dosis del sector", fontSize = 12.sp, color = TextoSecundario)
                     Text(
-                        "106%",
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFC62828)
+                        text = "Estado del sector",
+                        fontSize = 12.sp,
+                        color = TextoSecundario
                     )
+
                     Text(
-                        "Acumulada del turno",
+                        text = estado,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorEstado
+                    )
+
+                    Text(
+                        text = "Dato de ejemplo",
                         fontSize = 10.sp,
                         color = TextoSecundario
                     )
@@ -96,15 +150,6 @@ fun HygieneSectorScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-
-            LinearProgressIndicator(
-                progress = { 1f },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp),
-                color = Color(0xFFC62828),
-                trackColor = Color(0xFFD8CCDF)
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -132,19 +177,6 @@ fun HygieneSectorScreen(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-
-        Button(
-            onClick = onRegisterIntervention,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = VioletaPrincipal
-            )
-        ) {
-            Text("Registrar intervención", color = Color.White)
-        }
     }
 }
 
@@ -152,6 +184,6 @@ fun HygieneSectorScreen(
 @Composable
 fun HygieneSectorPreview() {
     SoundFriendlyWorkplaceTheme {
-        HygieneSectorScreen()
+        HygieneSectorScreen(sector = "Taller" )
     }
 }
