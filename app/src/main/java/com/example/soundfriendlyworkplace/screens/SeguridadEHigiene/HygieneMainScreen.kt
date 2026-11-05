@@ -18,6 +18,10 @@ fun HygieneMainScreen() {
     var sectorSeleccionado by rememberSaveable {
         mutableStateOf("Taller")
     }
+    // Estado temporal hasta integrar el backend.
+    var alertaReconocida by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     Scaffold(
         containerColor = FondoLavanda,
@@ -46,11 +50,28 @@ fun HygieneMainScreen() {
                 )
 
                 "alerts" -> HygieneAlertsScreen(
-                    onViewSectors = { pantalla = "home" }
+                    alertaReconocida = alertaReconocida,
+                    onAlertClick = {
+                        pantalla = "alertDetail"
+                    },
+                    onViewSectors = {
+                        pantalla = "home"
+                    }
                 )
+
+                "alertDetail" -> HygieneAlertDetailScreen(
+                    reconocida = alertaReconocida,
+                    onBack = {
+                        pantalla = "alerts"
+                    },
+                    onRecognize = {
+                        alertaReconocida = true
+                    }
+                )
+                "sensors" -> HygieneSensorsScreen()
+
                 // TODO: Crear y conectar las demás pantallas.
                 "history" -> HygieneHomeScreen()
-                "sensors" -> HygieneHomeScreen()
                 "profile" -> HygieneHomeScreen()
             }
         }

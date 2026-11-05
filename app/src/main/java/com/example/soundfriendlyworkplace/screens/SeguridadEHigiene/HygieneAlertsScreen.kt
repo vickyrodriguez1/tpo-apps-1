@@ -22,8 +22,11 @@ import com.example.soundfriendlyworkplace.ui.theme.*
 
 @Composable
 fun HygieneAlertsScreen(
+    alertaReconocida: Boolean = false,
     onAlertClick: (String) -> Unit = {},
-    onViewSectors: () -> Unit = {}
+    onViewSectors: () -> Unit = {},
+    onViewSensors: () -> Unit = {}
+
 ) {
     var pestañaSeleccionada by rememberSaveable {
         mutableStateOf("Sin resolver")
@@ -142,7 +145,11 @@ fun HygieneAlertsScreen(
                     Spacer(modifier = Modifier.height(5.dp))
 
                     Text(
-                        text = "91 dBA · Sin reconocer",
+                        text = if (alertaReconocida) {
+                            "91 dBA · Reconocida"
+                        } else {
+                            "91 dBA · Sin reconocer"
+                        },
                         fontSize = 12.sp,
                         color = TextoSecundario
                     )
@@ -196,20 +203,16 @@ fun HygieneAlertsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // TODO: Conectar con el estado real de sensores.
-                    Text(
-                        text = "Revisar sensor",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Color(0xFFE6D5FF),
-                                RoundedCornerShape(30.dp)
-                            )
-                            .padding(12.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF5C35A0),
-                        textAlign = TextAlign.Center
-                    )
+                    Button(
+                        onClick = onViewSensors,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF5C35A0)
+                        )
+                    ) {
+                        Text("Revisar sensor")
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
