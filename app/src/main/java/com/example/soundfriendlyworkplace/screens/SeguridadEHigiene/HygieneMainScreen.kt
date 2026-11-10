@@ -15,8 +15,9 @@ fun HygieneMainScreen() {
     var pantalla by rememberSaveable {
         mutableStateOf("home")
     }
-    var sectorSeleccionado by rememberSaveable {
-        mutableStateOf("Taller")
+    // ID del sector utilizado para consultar el backend.
+    var sectorIdSeleccionado by rememberSaveable {
+        mutableIntStateOf(0)
     }
     // Estado temporal hasta integrar el backend.
     var alertaReconocida by rememberSaveable {
@@ -38,14 +39,14 @@ fun HygieneMainScreen() {
         ) {
             when (pantalla) {
                 "home" -> HygieneHomeScreen(
-                    onSectorClick = { sector ->
-                        sectorSeleccionado = sector
+                    onSectorClick = { id, _ ->
+                        sectorIdSeleccionado = id
                         pantalla = "sector"
                     }
                 )
 
                 "sector" -> HygieneSectorScreen(
-                    sector = sectorSeleccionado,
+                    sectorId = sectorIdSeleccionado,
                     onBack = { pantalla = "home" }
                 )
 
