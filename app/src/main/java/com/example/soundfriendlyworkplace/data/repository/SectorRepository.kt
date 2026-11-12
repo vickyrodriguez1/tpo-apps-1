@@ -1,10 +1,14 @@
+
 package com.example.soundfriendlyworkplace.data.repository
 
+import com.example.soundfriendlyworkplace.data.local.SectorDao
 import com.example.soundfriendlyworkplace.data.model.SectorDto
 import com.example.soundfriendlyworkplace.data.remote.ApiService
 import com.example.soundfriendlyworkplace.data.remote.RetrofitClient
 
+
 class SectorRepository(
+    private val sectorDao: SectorDao,
     private val api: ApiService = RetrofitClient.api
 ) {
 
@@ -16,3 +20,4 @@ class SectorRepository(
         return api.obtenerSectorPorId(id)
     }
 }
+

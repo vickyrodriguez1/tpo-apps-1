@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.soundfriendlyworkplace.data.model.SectorDto
 import com.example.soundfriendlyworkplace.data.model.SensorDto
 import com.example.soundfriendlyworkplace.ui.theme.*
@@ -29,7 +28,7 @@ import java.util.Locale
 fun HygieneSectorScreen(
     sectorId: Int,
     onBack: () -> Unit = {},
-    hygieneViewModel: HygieneViewModel = viewModel()
+    hygieneViewModel: HygieneViewModel
 ) {
     LaunchedEffect(sectorId) {
         hygieneViewModel.cargarSectorPorId(sectorId)

@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -16,33 +18,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundfriendlyworkplace.ui.theme.*
 
+// Pantalla real: pendiente de conectar con el backend.
 @Composable
 fun HygieneAlertsScreen(
-    alertaReconocida: Boolean = false,
     onAlertClick: (String) -> Unit = {},
     onViewSectors: () -> Unit = {},
     onViewSensors: () -> Unit = {}
-
 ) {
-    var pestañaSeleccionada by rememberSaveable {
+    HygieneAlertsContent(
+        mostrarEjemplos = false,
+        onAlertClick = onAlertClick,
+        onViewSectors = onViewSectors,
+        onViewSensors = onViewSensors
+    )
+}
+
+// Contenido visual compartido por la pantalla y las Previews.
+@Composable
+private fun HygieneAlertsContent(
+    mostrarEjemplos: Boolean,
+    onAlertClick: (String) -> Unit,
+    onViewSectors: () -> Unit,
+    onViewSensors: () -> Unit
+) {
+    var pestanaSeleccionada by rememberSaveable {
         mutableStateOf("Sin resolver")
     }
-
-    // TODO: Obtener las alertas reales desde el backend.
-    // Estos datos son únicamente para mostrar el diseño.
-    val alertasSinResolver = listOf(
-        "Taller" to "critical",
-        "Sensor sin conexión" to "sensor"
-    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(FondoLavanda)
+            .verticalScroll(rememberScrollState())
             .padding(18.dp)
     ) {
         Text(
@@ -68,8 +80,8 @@ fun HygieneAlertsScreen(
                 )
                 .padding(3.dp)
         ) {
-            listOf("Sin resolver", "Resueltas").forEach { pestaña ->
-                val seleccionada = pestañaSeleccionada == pestaña
+            listOf("Sin resolver", "Resueltas").forEach { pestana ->
+                val seleccionada = pestanaSeleccionada == pestana
 
                 Box(
                     modifier = Modifier
@@ -79,12 +91,14 @@ fun HygieneAlertsScreen(
                             else Color.Transparent,
                             RoundedCornerShape(30.dp)
                         )
-                        .clickable { pestañaSeleccionada = pestaña }
+                        .clickable {
+                            pestanaSeleccionada = pestana
+                        }
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = pestaña,
+                        text = pestana,
                         fontSize = 12.sp,
                         fontWeight = if (seleccionada) {
                             FontWeight.Bold
@@ -99,134 +113,153 @@ fun HygieneAlertsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (pestañaSeleccionada == "Sin resolver") {
+        if (!mostrarEjemplos) {
+            // TODO: Consultar GET /api/v1/alertas.
+            // TODO: Separar alertas sin resolver y resueltas
+            // según los campos reales del backend.
 
-            if (alertasSinResolver.isEmpty()) {
-                SinAlertas(onViewSectors)
-            } else {
-                Text(
-                    text = "Priorizadas por gravedad y fecha.",
-                    fontSize = 11.sp,
-                    color = TextoSecundario
+            Text(
+                text = "Información de alertas pendiente de integrar con el backend.",
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 14.sp,
+                color = TextoSecundario,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = onViewSectors,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE9D9FF),
+                    contentColor = Color(0xFF5C35A0)
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Alerta crítica
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Color(0xFFFFE8EB),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .border(
-                            1.dp,
-                            Color(0xFFC62828),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(14.dp)
-                ) {
-                    Text(
-                        text = "ⓘ Crítico  ·  10:39",
-                        fontSize = 11.sp,
-                        color = Color(0xFFC62828)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Taller · alerta crítica",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextoPrincipal
-                    )
-
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    Text(
-                        text = if (alertaReconocida) {
-                            "91 dBA · Reconocida"
-                        } else {
-                            "91 dBA · Sin reconocer"
-                        },
-                        fontSize = 12.sp,
-                        color = TextoSecundario
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Button(
-                        onClick = { onAlertClick("Taller") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF5C35A0)
-                        )
-                    ) {
-                        Text("Ver y gestionar alerta")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Alerta de sensor
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Color.White,
-                            RoundedCornerShape(12.dp)
-                        )
-                        .border(
-                            1.dp,
-                            Color(0xFFDCD4E6),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(14.dp)
-                ) {
-                    Text(
-                        text = "Sensor sin conexión",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextoPrincipal
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "S-004 · Depósito · desde 08:14",
-                        fontSize = 12.sp,
-                        color = TextoSecundario
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // TODO: Conectar con el estado real de sensores.
-                    Button(
-                        onClick = onViewSensors,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF5C35A0)
-                        )
-                    ) {
-                        Text("Revisar sensor")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Una advertencia se resuelve al reconocerla. " +
-                            "Una crítica requiere registrar una intervención.",
-                    fontSize = 10.sp,
-                    color = TextoSecundario
-                )
+            ) {
+                Text("Ver sectores")
             }
 
+        } else if (pestanaSeleccionada == "Sin resolver") {
+
+            // Datos ficticios exclusivos de la Preview.
+            Text(
+                text = "Priorizadas por gravedad y fecha.",
+                fontSize = 11.sp,
+                color = TextoSecundario
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Alerta crítica
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color(0xFFFFE8EB),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        1.dp,
+                        Color(0xFFC62828),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(14.dp)
+            ) {
+                Text(
+                    text = "ⓘ Crítico  ·  10:39",
+                    fontSize = 11.sp,
+                    color = Color(0xFFC62828)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Taller · alerta crítica",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextoPrincipal
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Text(
+                    text = "91 dBA · Sin reconocer",
+                    fontSize = 12.sp,
+                    color = TextoSecundario
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { onAlertClick("Taller") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5C35A0)
+                    )
+                ) {
+                    Text("Ver y gestionar alerta")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Alerta de sensor
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color.White,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        1.dp,
+                        Color(0xFFDCD4E6),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(14.dp)
+            ) {
+                Text(
+                    text = "Sensor sin conexión",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextoPrincipal
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "S-004 · Depósito · desde 08:14",
+                    fontSize = 12.sp,
+                    color = TextoSecundario
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onViewSensors,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5C35A0)
+                    )
+                ) {
+                    Text("Revisar sensor")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Una advertencia se resuelve al reconocerla. " +
+                        "Una crítica requiere registrar una intervención.",
+                fontSize = 10.sp,
+                color = TextoSecundario
+            )
+
         } else {
-            // TODO: Mostrar alertas resueltas desde el backend.
+            // Estado vacío de ejemplo, exclusivo de la Preview.
             SinAlertas(
                 onViewSectors = onViewSectors,
                 mensaje = "No hay alertas resueltas"
@@ -294,3 +327,27 @@ private fun SinAlertas(
         Text("Ver sectores")
     }
 }
+
+// Preview con alertas de ejemplo.
+@Preview(showBackground = true)
+@Composable
+private fun HygieneAlertsPreview() {
+    SoundFriendlyWorkplaceTheme {
+        HygieneAlertsContent(
+            mostrarEjemplos = true,
+            onAlertClick = {},
+            onViewSectors = {},
+            onViewSensors = {}
+        )
+    }
+}
+
+// Preview del estado real mientras falta integrar el backend.
+@Preview(showBackground = true)
+@Composable
+private fun HygieneAlertsPendingPreview() {
+    SoundFriendlyWorkplaceTheme {
+        HygieneAlertsScreen()
+    }
+}
+

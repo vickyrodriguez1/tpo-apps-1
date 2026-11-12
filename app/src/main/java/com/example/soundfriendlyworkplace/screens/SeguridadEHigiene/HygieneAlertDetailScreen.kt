@@ -1,4 +1,3 @@
-
 package com.example.soundfriendlyworkplace.screens.SeguridadEHigiene
 
 import androidx.compose.foundation.background
@@ -14,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundfriendlyworkplace.ui.theme.*
@@ -24,9 +24,54 @@ fun HygieneAlertDetailScreen(
     onBack: () -> Unit,
     onRecognize: () -> Unit
 ) {
-    // TODO: Obtener los datos de la alerta desde el backend.
-    // TODO: Persistir el reconocimiento mediante el backend.
+    // TODO: Obtener el detalle de la alerta desde el backend.
+    // TODO: Implementar el reconocimiento cuando exista el endpoint.
+    // Los parámetros reconocida y onRecognize se mantienen
+    // temporalmente por compatibilidad con HygieneMainScreen.
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(FondoLavanda)
+            .padding(18.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onBack) {
+                Text(
+                    text = "‹",
+                    fontSize = 30.sp,
+                    color = TextoPrincipal
+                )
+            }
+
+            Text(
+                text = "Detalle de alerta",
+                fontSize = 20.sp,
+                color = TextoPrincipal
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Información de la alerta pendiente de integrar con el backend.",
+            fontSize = 14.sp,
+            color = TextoSecundario
+        )
+    }
+}
+
+// Componente visual con datos de ejemplo.
+// Se utiliza únicamente en las Previews.
+@Composable
+private fun HygieneAlertDetailContent(
+    reconocida: Boolean,
+    onBack: () -> Unit,
+    onRecognize: () -> Unit,
+    reconocimientoHabilitado: Boolean = false
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -164,8 +209,15 @@ fun HygieneAlertDetailScreen(
                 if (reconocida) "Reconocida" else "Sin reconocer"
             )
 
-            FilaInformacionAlerta("Última lectura", "10:42")
-            FilaInformacionAlerta("Sector", "Taller · Nave 1")
+            FilaInformacionAlerta(
+                "Última lectura",
+                "10:42"
+            )
+
+            FilaInformacionAlerta(
+                "Sector",
+                "Taller · Nave 1"
+            )
 
             if (reconocida) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -187,9 +239,20 @@ fun HygieneAlertDetailScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        if (!reconocimientoHabilitado && !reconocida) {
+            Text(
+                text = "El reconocimiento de alertas estará disponible cuando se integre con el backend.",
+                fontSize = 12.sp,
+                color = TextoSecundario
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         if (!reconocida) {
             Button(
                 onClick = onRecognize,
+                enabled = reconocimientoHabilitado,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -248,5 +311,30 @@ private fun FilaInformacionAlerta(
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun HygieneAlertDetailPreview() {
+    SoundFriendlyWorkplaceTheme {
+        HygieneAlertDetailContent(
+            reconocida = false,
+            onBack = {},
+            onRecognize = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HygieneAlertDetailRecognizedPreview() {
+    SoundFriendlyWorkplaceTheme {
+        HygieneAlertDetailContent(
+            reconocida = true,
+            onBack = {},
+            onRecognize = {}
+        )
+    }
+}
+
 
 

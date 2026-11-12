@@ -35,9 +35,9 @@ sealed interface SectorDetalleUiState {
     ) : SectorDetalleUiState
 }
 
-class HygieneViewModel : ViewModel() {
-
-    private val repository = SectorRepository()
+class HygieneViewModel(
+    private val repository: SectorRepository
+) : ViewModel() {
 
     // Estado utilizado por la pantalla Inicio.
     var sectoresUiState by mutableStateOf<SectoresUiState>(
