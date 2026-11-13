@@ -1,3 +1,4 @@
+
 package com.example.soundfriendlyworkplace.viewmodel
 
 import androidx.compose.runtime.getValue
@@ -7,14 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.soundfriendlyworkplace.data.model.SectorDto
 import com.example.soundfriendlyworkplace.data.repository.SectorRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-// Estado de la lista de sectores.
 sealed interface SectoresUiState {
+
     data object Cargando : SectoresUiState
 
     data class Exito(
-        val sectores: List<SectorDto>
+        val sectores: List<SectorDto>,
+        val desdeCache: Boolean = false
     ) : SectoresUiState
 
     data class Error(
@@ -22,12 +25,13 @@ sealed interface SectoresUiState {
     ) : SectoresUiState
 }
 
-// Estado del detalle de un sector.
 sealed interface SectorDetalleUiState {
+
     data object Cargando : SectorDetalleUiState
 
     data class Exito(
-        val sector: SectorDto
+        val sector: SectorDto,
+        val desdeCache: Boolean = false
     ) : SectorDetalleUiState
 
     data class Error(
@@ -39,13 +43,11 @@ class HygieneViewModel(
     private val repository: SectorRepository
 ) : ViewModel() {
 
-    // Estado utilizado por la pantalla Inicio.
     var sectoresUiState by mutableStateOf<SectoresUiState>(
         SectoresUiState.Cargando
     )
         private set
 
-    // Estado utilizado por la pantalla Detalle del sector.
     var sectorDetalleUiState by mutableStateOf<SectorDetalleUiState>(
         SectorDetalleUiState.Cargando
     )
@@ -55,38 +57,47 @@ class HygieneViewModel(
         cargarSectores()
     }
 
-    // Obtiene todos los sectores.
     fun cargarSectores() {
         viewModelScope.launch {
             sectoresUiState = SectoresUiState.Cargando
 
             sectoresUiState = try {
+                val resultado = repository.obtenerSectores()
+
                 SectoresUiState.Exito(
-                    repository.obtenerSectores()
+                    sectores = resultado.sectores,
+                    desdeCache = resultado.desdeCache
                 )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 SectoresUiState.Error(
-                    "No se pudieron cargar los sectores. Verificá la conexión."
+                    "No se pudieron cargar los sectores y no hay datos guardados."
                 )
             }
         }
     }
 
-    // Obtiene un sector específico mediante su ID.
     fun cargarSectorPorId(id: Int) {
         viewModelScope.launch {
             sectorDetalleUiState = SectorDetalleUiState.Cargando
 
             sectorDetalleUiState = try {
+                val resultado = repository.obtenerSectorPorId(id)
+
                 SectorDetalleUiState.Exito(
-                    repository.obtenerSectorPorId(id)
+                    sector = resultado.sector,
+                    desdeCache = resultado.desdeCache
                 )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 SectorDetalleUiState.Error(
-                    "No se pudo cargar el detalle del sector. Verificá la conexión."
+                    "No se pudo cargar el sector y no hay datos guardados."
                 )
             }
         }
     }
 }
+
 

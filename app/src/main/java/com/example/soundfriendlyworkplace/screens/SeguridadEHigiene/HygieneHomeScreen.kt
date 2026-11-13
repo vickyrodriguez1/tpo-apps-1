@@ -1,4 +1,3 @@
-
 package com.example.soundfriendlyworkplace.screens.SeguridadEHigiene
 
 import androidx.compose.foundation.background
@@ -8,15 +7,25 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.example.soundfriendlyworkplace.data.model.SectorDto
 import com.example.soundfriendlyworkplace.data.model.SensorDto
 import com.example.soundfriendlyworkplace.ui.theme.*
@@ -27,27 +36,58 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-// Pantalla real: obtiene el estado desde el ViewModel.
+// Pantalla real: utiliza el ViewModel y actualiza al volver a primer plano.
 @Composable
 fun HygieneHomeScreen(
     onSectorClick: (Int, String) -> Unit = { _, _ -> },
+    onViewAlerts: () -> Unit = {},
     hygieneViewModel: HygieneViewModel
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var primeraApertura by remember(hygieneViewModel) {
+        mutableStateOf(true)
+    }
+
+    DisposableEffect(lifecycleOwner, hygieneViewModel) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (primeraApertura) {
+                    // El ViewModel ya carga los sectores al crearse.
+                    primeraApertura = false
+                } else {
+                    hygieneViewModel.cargarSectores()
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     HygieneHomeContent(
         estado = hygieneViewModel.sectoresUiState,
         onSectorClick = onSectorClick,
-        onReintentar = { hygieneViewModel.cargarSectores() }
+        onViewAlerts = onViewAlerts,
+        onReintentar = {
+            hygieneViewModel.cargarSectores()
+        }
     )
 }
 
-// Contenido visual: también se puede utilizar en la Preview.
+// Contenido visual: independiente del ViewModel para permitir la Preview.
 @Composable
 private fun HygieneHomeContent(
     estado: SectoresUiState,
     onSectorClick: (Int, String) -> Unit = { _, _ -> },
+    onViewAlerts: () -> Unit = {},
     onReintentar: () -> Unit = {}
 ) {
-    val conectado = estado is SectoresUiState.Exito
+    val conectado = estado is SectoresUiState.Exito &&
+            !estado.desdeCache
 
     Column(
         modifier = Modifier
@@ -77,12 +117,19 @@ private fun HygieneHomeContent(
 
             Text(
                 text = when (estado) {
-                    is SectoresUiState.Exito -> "✓ En línea"
-                    is SectoresUiState.Cargando -> "Conectando..."
+                    is SectoresUiState.Exito ->
+                        if (estado.desdeCache) "Sin conexión"
+                        else "✓ En línea"
+
+                    SectoresUiState.Cargando -> "Conectando..."
                     is SectoresUiState.Error -> "Sin conexión"
                 },
                 fontSize = 12.sp,
-                color = if (conectado) Color(0xFF2E7D32) else Color.Gray,
+                color = if (conectado) {
+                    Color(0xFF2E7D32)
+                } else {
+                    Color.Gray
+                },
                 modifier = Modifier
                     .background(
                         if (conectado) Color(0xFFE4F3E8)
@@ -103,8 +150,23 @@ private fun HygieneHomeContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Permite volver a consultar el backend en cualquier momento.
+        Button(
+            onClick = onReintentar,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = estado !is SectoresUiState.Cargando,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE6DDF5),
+                contentColor = TextoPrincipal
+            )
+        ) {
+            Text("↻ Actualizar datos")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         when (estado) {
-            is SectoresUiState.Cargando -> {
+            SectoresUiState.Cargando -> {
                 Text(
                     text = "Cargando sectores...",
                     color = TextoSecundario
@@ -116,25 +178,49 @@ private fun HygieneHomeContent(
                     text = estado.mensaje,
                     color = Color(0xFFB71C1C)
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Reintentar",
-                    fontWeight = FontWeight.Bold,
-                    color = TextoPrincipal,
-                    modifier = Modifier.clickable(onClick = onReintentar)
-                )
             }
 
             is SectoresUiState.Exito -> {
                 val sectores = estado.sectores
-                val alertasPendientes = sectores.sumOf { it.alertasPendientes }
+
+                if (estado.desdeCache) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Color(0xFFFFEFCB),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(14.dp)
+                    ) {
+                        Text(
+                            text = "Datos guardados · Sin conexión",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = Color(0xFF795500)
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = "Estos valores son anteriores y pueden haber cambiado.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF795500)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                val alertasPendientes = sectores.sumOf {
+                    it.alertasPendientes
+                }
 
                 if (alertasPendientes > 0) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable(onClick = onViewAlerts)
                             .background(
                                 Color(0xFFFFE8EB),
                                 RoundedCornerShape(12.dp)
@@ -224,14 +310,23 @@ private fun HygieneHomeContent(
                         nombre = sector.nombre,
                         sensor = sector.sensor?.id ?: "Sin sensor",
                         nivelRuido = sector.nivelDba?.let {
-                            String.format(Locale.getDefault(), "%.1f dBA", it)
+                            String.format(
+                                Locale.getDefault(),
+                                "%.1f dBA",
+                                it
+                            )
                         } ?: "Sin datos",
                         estado = nombreEstado,
                         colorEstado = colorEstado,
                         colorFondo = colorFondo,
-                        hora = formatearHora(sector.ultimaActualizacion),
+                        hora = formatearHora(
+                            sector.ultimaActualizacion
+                        ),
                         onClick = {
-                            onSectorClick(sector.id, sector.nombre)
+                            onSectorClick(
+                                sector.id,
+                                sector.nombre
+                            )
                         }
                     )
 
@@ -273,14 +368,16 @@ private fun coloresPorEstado(
     }
 }
 
-// Convierte la fecha UTC a la hora local del dispositivo.
+// Convierte la fecha UTC del backend a la hora local del dispositivo.
 private fun formatearHora(fecha: String?): String {
     if (fecha == null) return "Sin actualización"
 
     return try {
         Instant.parse(fecha)
             .atZone(ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
+            .format(
+                DateTimeFormatter.ofPattern("HH:mm")
+            )
     } catch (e: Exception) {
         "Sin actualización"
     }
@@ -371,11 +468,15 @@ private fun EstadoResumen(
     modifier: Modifier = Modifier,
     textoBlanco: Boolean = false
 ) {
-    val colorTexto = if (textoBlanco) Color.White else TextoPrincipal
+    val colorTexto =
+        if (textoBlanco) Color.White else TextoPrincipal
 
     Column(
         modifier = modifier
-            .background(fondo, RoundedCornerShape(10.dp))
+            .background(
+                fondo,
+                RoundedCornerShape(10.dp)
+            )
             .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -395,7 +496,7 @@ private fun EstadoResumen(
 }
 
 // Datos ficticios utilizados únicamente en la Preview.
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun HygieneHomePreview() {
     val sectoresDeEjemplo = listOf(
@@ -420,24 +521,17 @@ fun HygieneHomePreview() {
             ultimaActualizacion = "2026-11-09T13:42:00Z",
             sensor = SensorDto("S-002", "CONECTADO"),
             alertasPendientes = 0
-        ),
-        SectorDto(
-            id = 3,
-            nombre = "Administración",
-            planta = "Planta industrial",
-            estado = "NORMAL",
-            nivelDba = 65.0,
-            exposicionPct = 20.0,
-            ultimaActualizacion = "2026-11-09T13:42:00Z",
-            sensor = SensorDto("S-001", "CONECTADO"),
-            alertasPendientes = 0
         )
     )
 
     SoundFriendlyWorkplaceTheme {
         HygieneHomeContent(
-            estado = SectoresUiState.Exito(sectoresDeEjemplo)
+            estado = SectoresUiState.Exito(
+                sectoresDeEjemplo
+            )
         )
     }
 }
+
+
 

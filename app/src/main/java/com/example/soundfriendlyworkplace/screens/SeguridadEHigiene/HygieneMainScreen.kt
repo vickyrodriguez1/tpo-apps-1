@@ -51,6 +51,10 @@ fun HygieneMainScreen() {
     var sectorIdSeleccionado by rememberSaveable {
         mutableIntStateOf(0)
     }
+    // ID de la alerta seleccionada.
+    var alertaIdSeleccionada by rememberSaveable {
+        mutableIntStateOf(0)
+    }
 
     Scaffold(
         containerColor = FondoLavanda,
@@ -72,6 +76,9 @@ fun HygieneMainScreen() {
                     onSectorClick = { id, _ ->
                         sectorIdSeleccionado = id
                         pantalla = "sector"
+                    },
+                    onViewAlerts = {
+                        pantalla = "alerts"
                     }
                 )
 
@@ -96,13 +103,9 @@ fun HygieneMainScreen() {
                 )
 
                 "alertDetail" -> HygieneAlertDetailScreen(
-                    reconocida = false,
+                    alertaId = alertaIdSeleccionada,
                     onBack = {
                         pantalla = "alerts"
-                    },
-                    onRecognize = {
-                        // TODO: Implementar cuando el backend
-                        // permita registrar reconocimientos.
                     }
                 )
 
